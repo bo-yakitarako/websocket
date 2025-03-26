@@ -1,11 +1,12 @@
 'use client';
 
 import styles from './MessagesList.module.css';
-import { useMessages } from '../contexts/MessagesContext';
 import dayjs from 'dayjs';
+import { useAtomValue } from 'jotai';
+import { messagesAtom } from '../globalStates/atoms';
 
 export function MessagesList() {
-  const messages = useMessages();
+  const messages = useAtomValue(messagesAtom);
 
   return (
     <div className={styles.container}>

@@ -1,41 +1,27 @@
-import { useEffect, useRef } from 'react';
+'use client';
 
-const available = false;
+import { useSetAtom } from 'jotai';
+import { useEffect } from 'react';
+import { io } from 'socket.io-client';
+import { addMessageAtom, socketAtom } from '../globalStates/atoms';
 
-export function useWebSocket(url: string) {
-  const ws = useRef<WebSocket | null>(null);
+export function useWebSocket() {
+  const setSocket = useSetAtom(socketAtom);
+  const addMessage = useSetAtom(addMessageAtom);
 
   useEffect(() => {
-    if (!available) return;
+    fetch('/api/sockets', { method: 'POST' }).then(() => {
+      const socket = io({ autoConnect: false });
+      socket.connect();
+      setSocket(socket);
 
-    ws.current = new WebSocket(url);
+      socket.on('connect', () => {
+        console.log('connected');
+      });
 
-    ws.current.onopen = () => {
-      console.log('WebSocket接続が確立されましたわ');
-    };
-
-    ws.current.onerror = (error) => {
-      console.error('WebSocketエラーが発生いたしましたわ:', error);
-    };
-
-    ws.current.onclose = () => {
-      console.log('WebSocket接続が閉じられましたわ');
-    };
-
-    return () => {
-      if (ws.current) {
-        ws.current.close();
-      }
-    };
-  }, [url]);
-
-  const sendMessage = (message: string) => {
-    if (ws.current?.readyState === WebSocket.OPEN) {
-      ws.current.send(message);
-    } else {
-      console.error('WebSocketが接続されていませんわ');
-    }
-  };
-
-  return { sendMessage };
+      socket.on('message', (data: string) => {
+        addMessage(data);
+      });
+    });
+  }, []);
 }

@@ -2,16 +2,16 @@
 
 import { useState, KeyboardEvent } from 'react';
 import styles from './Input.module.css';
-import { useAddMessage } from '../contexts/MessagesContext';
+import { useAtomValue } from 'jotai';
+import { socketAtom } from '../globalStates/atoms';
 
 export function Input() {
   const [message, setMessage] = useState('');
-  const addMessage = useAddMessage();
+  const socket = useAtomValue(socketAtom);
 
   const handleSubmit = () => {
     if (message.trim()) {
-      const result = addMessage(message);
-      console.log(result);
+      socket?.emit('message', message);
       setMessage('');
     }
   };
